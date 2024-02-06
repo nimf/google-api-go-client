@@ -7,6 +7,7 @@ package option
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 
 	"golang.org/x/oauth2"
@@ -33,10 +34,18 @@ func (w withTokenSource) Apply(o *internal.DialSettings) {
 	o.TokenSource = w.ts
 }
 
+func (w withTokenSource) String() string {
+	return fmt.Sprintf("o.TokenSource = %v", w.ts)
+}
+
 type withCredFile string
 
 func (w withCredFile) Apply(o *internal.DialSettings) {
 	o.CredentialsFile = string(w)
+}
+
+func (w withCredFile) String() string {
+	return fmt.Sprintf("o.CredentialsFile = %v", string(w))
 }
 
 // WithCredentialsFile returns a ClientOption that authenticates
@@ -68,6 +77,10 @@ func (w withCredentialsJSON) Apply(o *internal.DialSettings) {
 	copy(o.CredentialsJSON, w)
 }
 
+func (w withCredentialsJSON) String() string {
+	return fmt.Sprintf("o.CredentialsJSON = %v", string(w))
+}
+
 // WithEndpoint returns a ClientOption that overrides the default endpoint
 // to be used for a service.
 func WithEndpoint(url string) ClientOption {
@@ -78,6 +91,10 @@ type withEndpoint string
 
 func (w withEndpoint) Apply(o *internal.DialSettings) {
 	o.Endpoint = string(w)
+}
+
+func (w withEndpoint) String() string {
+	return fmt.Sprintf("o.Endpoint = %v", string(w))
 }
 
 // WithScopes returns a ClientOption that overrides the default OAuth2 scopes
@@ -96,6 +113,14 @@ func (w withScopes) Apply(o *internal.DialSettings) {
 	copy(o.Scopes, w)
 }
 
+func (w withScopes) String() string {
+	ss := ""
+	for _, s := range w {
+		ss = fmt.Sprintf("%v, %v", ss, s)
+	}
+	return fmt.Sprintf("o.Scopes = [%v]", ss)
+}
+
 // WithUserAgent returns a ClientOption that sets the User-Agent. This option
 // is incompatible with the [WithHTTPClient] option. If you wish to provide a
 // custom client you will need to add this header via RoundTripper middleware.
@@ -106,6 +131,10 @@ func WithUserAgent(ua string) ClientOption {
 type withUA string
 
 func (w withUA) Apply(o *internal.DialSettings) { o.UserAgent = string(w) }
+
+func (w withUA) String() string {
+	return fmt.Sprintf("o.UserAgent = %v", string(w))
+}
 
 // WithHTTPClient returns a ClientOption that specifies the HTTP client to use
 // as the basis of communications. This option may only be used with services
@@ -119,6 +148,10 @@ type withHTTPClient struct{ client *http.Client }
 
 func (w withHTTPClient) Apply(o *internal.DialSettings) {
 	o.HTTPClient = w.client
+}
+
+func (w withHTTPClient) String() string {
+	return fmt.Sprintf("o.HTTPClient = %v", w.client)
 }
 
 // WithGRPCConn returns a ClientOption that specifies the gRPC client
@@ -136,6 +169,10 @@ func (w withGRPCConn) Apply(o *internal.DialSettings) {
 	o.GRPCConn = w.conn
 }
 
+func (w withGRPCConn) String() string {
+	return fmt.Sprintf("o.GRPCConn = %v", w.conn)
+}
+
 // WithGRPCDialOption returns a ClientOption that appends a new grpc.DialOption
 // to an underlying gRPC dial. It does not work with WithGRPCConn.
 func WithGRPCDialOption(opt grpc.DialOption) ClientOption {
@@ -148,6 +185,10 @@ func (w withGRPCDialOption) Apply(o *internal.DialSettings) {
 	o.GRPCDialOpts = append(o.GRPCDialOpts, w.opt)
 }
 
+func (w withGRPCDialOption) String() string {
+	return fmt.Sprintf("o.GRPCDialOpts << %v", w.opt)
+}
+
 // WithGRPCConnectionPool returns a ClientOption that creates a pool of gRPC
 // connections that requests will be balanced between.
 func WithGRPCConnectionPool(size int) ClientOption {
@@ -158,6 +199,10 @@ type withGRPCConnectionPool int
 
 func (w withGRPCConnectionPool) Apply(o *internal.DialSettings) {
 	o.GRPCConnPoolSize = int(w)
+}
+
+func (w withGRPCConnectionPool) String() string {
+	return fmt.Sprintf("o.GRPCConnPoolSize = %v", int(w))
 }
 
 // WithAPIKey returns a ClientOption that specifies an API key to be used
@@ -173,6 +218,10 @@ type withAPIKey string
 
 func (w withAPIKey) Apply(o *internal.DialSettings) { o.APIKey = string(w) }
 
+func (w withAPIKey) String() string {
+	return fmt.Sprintf("o.APIKey = %v", string(w))
+}
+
 // WithAudiences returns a ClientOption that specifies an audience to be used
 // as the audience field ("aud") for the JWT token authentication.
 func WithAudiences(audience ...string) ClientOption {
@@ -184,6 +233,14 @@ type withAudiences []string
 func (w withAudiences) Apply(o *internal.DialSettings) {
 	o.Audiences = make([]string, len(w))
 	copy(o.Audiences, w)
+}
+
+func (w withAudiences) String() string {
+	aa := ""
+	for _, a := range w {
+		aa = fmt.Sprintf("%v, %v", aa, a)
+	}
+	return fmt.Sprintf("o.Audiences = [%v]", aa)
 }
 
 // WithoutAuthentication returns a ClientOption that specifies that no
@@ -199,6 +256,10 @@ type withoutAuthentication struct{}
 
 func (w withoutAuthentication) Apply(o *internal.DialSettings) { o.NoAuth = true }
 
+func (w withoutAuthentication) String() string {
+	return fmt.Sprintf("o.NoAuth = %v", true)
+}
+
 // WithQuotaProject returns a ClientOption that specifies the project used
 // for quota and billing purposes.
 //
@@ -212,6 +273,10 @@ type withQuotaProject string
 
 func (w withQuotaProject) Apply(o *internal.DialSettings) {
 	o.QuotaProject = string(w)
+}
+
+func (w withQuotaProject) String() string {
+	return fmt.Sprintf("o.QuotaProject = %v", string(w))
 }
 
 // WithRequestReason returns a ClientOption that specifies a reason for
@@ -230,6 +295,10 @@ func (w withRequestReason) Apply(o *internal.DialSettings) {
 	o.RequestReason = string(w)
 }
 
+func (w withRequestReason) String() string {
+	return fmt.Sprintf("o.RequestReason = %v", string(w))
+}
+
 // WithTelemetryDisabled returns a ClientOption that disables default telemetry (OpenCensus)
 // settings on gRPC and HTTP clients.
 // An example reason would be to bind custom telemetry that overrides the defaults.
@@ -241,6 +310,10 @@ type withTelemetryDisabled struct{}
 
 func (w withTelemetryDisabled) Apply(o *internal.DialSettings) {
 	o.TelemetryDisabled = true
+}
+
+func (w withTelemetryDisabled) String() string {
+	return fmt.Sprintf("o.TelemetryDisabled = %v", true)
 }
 
 // ClientCertSource is a function that returns a TLS client certificate to be used
@@ -273,6 +346,10 @@ type withClientCertSource struct{ s ClientCertSource }
 
 func (w withClientCertSource) Apply(o *internal.DialSettings) {
 	o.ClientCertSource = w.s
+}
+
+func (w withClientCertSource) String() string {
+	return fmt.Sprintf("o.ClientCertSource = %p", w.s)
 }
 
 // ImpersonateCredentials returns a ClientOption that will impersonate the
@@ -333,10 +410,18 @@ func (i impersonateServiceAccount) Apply(o *internal.DialSettings) {
 	copy(o.ImpersonationConfig.Delegates, i.delegates)
 }
 
+func (i impersonateServiceAccount) String() string {
+	return fmt.Sprintf("o.ImpersonationConfig = %v %v", i.target, i.delegates)
+}
+
 type withCreds google.Credentials
 
 func (w *withCreds) Apply(o *internal.DialSettings) {
 	o.Credentials = (*google.Credentials)(w)
+}
+
+func (w *withCreds) String() string {
+	return fmt.Sprintf("o.Credentials = %v", (*google.Credentials)(w))
 }
 
 // WithCredentials returns a ClientOption that authenticates API calls.
@@ -355,4 +440,8 @@ type withUniverseDomain string
 
 func (w withUniverseDomain) Apply(o *internal.DialSettings) {
 	o.UniverseDomain = string(w)
+}
+
+func (w withUniverseDomain) String() string {
+	return fmt.Sprintf("o.UniverseDomain = %v", string(w))
 }
